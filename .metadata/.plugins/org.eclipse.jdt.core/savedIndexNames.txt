@@ -1,0 +1,13 @@
+INDEX VERSION 1.134+C:\Users\isaia\OneDrive\Documents\GitHub\CSE365-Spring-2025-Personal\.metadata\.plugins\org.eclipse.jdt.core
+3794503602.index
+1795538743.index
+3945886896.index
+908272002.index
+3203343727.index
+224179918.index
+637683769.index
+2756885923.index
+1865797976.index
+2851185357.index
+3732647177.index
+3982345152.index

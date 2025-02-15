@@ -1,0 +1,40 @@
+package application;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
+public class Questions {
+	
+	// Initialize a list of questions.
+    private List<Question> questionList;
+
+    public Questions() {
+        this.questionList = new ArrayList<>();
+    }
+
+    // Add a new question
+    public void addQuestion(Question question) {
+        questionList.add(question);
+    }
+
+    // Remove a question by ID
+    public boolean removeQuestion(String id) {
+        return questionList.removeIf(q -> q.getId().equals(id));
+    }
+
+    // Retrieve a question by ID
+    public Question getQuestionById(String id) {
+        return questionList.stream()
+                           .filter(q -> q.getId().equals(id))
+                           .findFirst()
+                           .orElse(null);
+    }
+
+    // Search for questions containing a keyword in the title
+    public List<Question> searchByKeyword(String keyword) {
+        return questionList.stream()
+                           .filter(q -> q.getTitle().toLowerCase().contains(keyword.toLowerCase()))
+                           .collect(Collectors.toList());
+    }
+}

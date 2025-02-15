@@ -1,0 +1,28 @@
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
+public class Answers {
+    private List<Answer> answerList;
+
+    public Answers() {
+        this.answerList = new ArrayList<>();
+    }
+
+    // Add a new answer
+    public void addAnswer(Answer answer) {
+        answerList.add(answer);
+    }
+
+    // Remove an answer by ID
+    public boolean removeAnswer(String id) {
+        return answerList.removeIf(a -> a.getId().equals(id));
+    }
+
+    // Retrieve answers for a specific question
+    public List<Answer> getAnswersForQuestion(String questionId) {
+        return answerList.stream()
+                         .filter(a -> a.getQuestionId().equals(questionId))
+                         .collect(Collectors.toList());
+    }
+}
