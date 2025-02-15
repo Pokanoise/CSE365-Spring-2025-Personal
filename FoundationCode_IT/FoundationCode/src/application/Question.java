@@ -1,0 +1,50 @@
+package application;
+
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+
+public class Question {
+    private String id;
+    private String title;
+    private String body;
+    private String author;
+    private LocalDateTime timestamp;
+    private List<String> tags;
+    private List<String> answers; // NEW FIELD
+
+    public Question(String id, String title, String body, String author, LocalDateTime timestamp, List<String> tags) {
+        if (title == null || title.trim().isEmpty()) {
+            throw new IllegalArgumentException("Title cannot be empty");
+        }
+        if (body == null || body.trim().isEmpty()) {
+            throw new IllegalArgumentException("Body cannot be empty");
+        }
+        this.id = id;
+        this.title = title;
+        this.body = body;
+        this.author = author;
+        this.timestamp = timestamp;
+        this.tags = tags;
+        this.answers = new ArrayList<>(); // Initialize empty answers list
+    }
+
+    // Getters and Setters
+    public String getId() { return id; }
+    public String getTitle() { return title; }
+    public String getBody() { return body; }
+    public String getAuthor() { return author; }
+    public LocalDateTime getTimestamp() { return timestamp; }
+    public List<String> getTags() { return tags; }
+    public List<String> getAnswers() { return answers; }
+
+    // Add an answer to the question
+    public void addAnswer(String answer) {
+        answers.add(answer);
+    }
+
+    // Check if the question has any answers
+    public boolean isAnswered() {
+        return !answers.isEmpty();
+    }
+}
