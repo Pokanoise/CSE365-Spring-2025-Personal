@@ -1,0 +1,58 @@
+package application;
+
+import javafx.application.Application;
+import javafx.scene.Scene;
+import javafx.scene.control.*;
+import javafx.scene.layout.VBox;
+import javafx.stage.Stage;
+
+import java.time.LocalTime;
+
+public class DiscussionBoard extends Application {
+    
+    private Questions questions = new Questions();
+    private ListView<String> questionListView = new ListView<>();
+
+    @Override
+    public void start(Stage primaryStage) {
+        // Sample Data
+    	questions.addQuestion(new Question("1", "What is Java?", "Explain Java basics.", "User1", LocalDateTime.now(), List.of("Java", "Programming")));
+    	questions.addQuestion(new Question("2", "How does JavaFX work?", "Need help with JavaFX.", "User2", LocalDateTime.now(), List.of("JavaFX", "GUI")));
+
+
+        updateListView();
+
+        // UI Components
+        TextField titleField = new TextField();
+        titleField.setPromptText("Enter question title");
+
+        Button addButton = new Button("Add Question");
+        addButton.setOnAction(e -> {
+            String title = titleField.getText();
+            if (!title.isEmpty()) {
+                String id = String.valueOf(questions.getAllQuestions().size() + 1);
+                questions.addQuestion(new Question(id, title, "New question", "User", null));
+                updateListView();
+                titleField.clear();
+            }
+        });
+
+        VBox layout = new VBox(10, questionListView, titleField, addButton);
+        Scene scene = new Scene(layout, 400, 300);
+
+        primaryStage.setTitle("Discussion Board");
+        primaryStage.setScene(scene);
+        primaryStage.show();
+    }
+
+    private void updateListView() {
+        questionListView.getItems().clear();
+        for (Question q : questions.getAllQuestions()) {
+            questionListView.getItems().add(q.getTitle());
+        }
+    }
+
+    public static void main(String[] args) {
+        launch(args);
+    }
+}

@@ -1,0 +1,138 @@
+package application;
+
+import javafx.application.Application;
+import javafx.scene.Scene;
+import javafx.scene.control.*;
+import javafx.scene.layout.*;
+import javafx.stage.Stage;
+import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+public class DiscussionBoard extends Application {
+    
+    private Questions questions = new Questions();
+    private ListView<Question> questionListView = new ListView<>();
+    private ListView<String> tagListView = new ListView<>();
+    
+    private ListView<String> answersListView = new ListView<>();
+    private Answers answers = new Answers();
+
+
+    @Override
+    public void start(Stage primaryStage) {
+    	
+        // Sample Questions from ed disussion 
+        questions.addQuestion(new Question("1", "What is Java?", "Explain Java basics.", "User1", LocalDateTime.now(), List.of("Java", "Programming")));
+        questions.addQuestion(new Question("2", "How does JavaFX work?", "Need help with JavaFX.", "User2", LocalDateTime.now(), List.of("JavaFX", "GUI")));
+        questions.addQuestion(new Question("3", "Do we lose points if we utilize more than four classes to implement HW2?", "Need clarification.", "User3", LocalDateTime.now(), List.of("Homework", "Grading")));
+
+        updateListView();
+        updateTagListView();
+
+        // UI Components
+        TextField titleField = new TextField();
+        titleField.setPromptText("Enter question title");
+
+        Button addButton = new Button("Add Question");
+        addButton.setOnAction(e -> {
+            String title = titleField.getText();
+            if (!title.isEmpty()) {
+                String id = String.valueOf(questions.getAllQuestions().size() + 1);
+                Question newQuestion = new Question(id, title, "New question", "User", LocalDateTime.now(), List.of("General"));
+                questions.addQuestion(newQuestion);
+                updateListView();
+                updateTagListView();
+                titleField.clear();
+            }
+        });
+
+        // Layout for the tag panel (LEFT SIDE)
+        VBox tagPanel = new VBox(20, new Label("Filter by Tags"), tagListView);
+        tagPanel.setPrefWidth(200);
+
+        // Layout for the question panel (RIGHT SIDE)
+        VBox questionPanel = new VBox(10, new Label("Questions"), questionListView, titleField, addButton);
+        questionPanel.setPrefWidth(500);
+
+        // Main layout (tags on the LEFT, questions on the RIGHT)
+        HBox mainLayout = new HBox(20, tagPanel, questionPanel);
+        Scene scene = new Scene(mainLayout, 800, 500); // INCREASED WINDOW SIZE
+
+        primaryStage.setTitle("Discussion Board");
+        primaryStage.setScene(scene);
+        primaryStage.show();
+    }
+
+    private void updateListView() {
+        questionListView.getItems().clear();
+        questionListView.getItems().addAll(questions.getAllQuestions());
+        
+        questionListView.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal != null) {
+                updateAnswerListView(newVal.getId());  // Show answers when a question is selected
+            }
+        });
+
+        questionListView.setCellFactory(param -> new ListCell<>() {
+            private final Button answerButton = new Button("💬");
+
+            {
+                answerButton.setOnAction(e -> {
+                    Question question = getItem();
+                    if (question != null) {
+                        showAnswerAlert(question);
+                    }
+                });
+                answerButton.setStyle("-fx-font-size: 10px; -fx-padding: 2px 5px;");
+            }
+
+            @Override
+            protected void updateItem(Question question, boolean empty) {
+                super.updateItem(question, empty);
+                if (empty || question == null) {
+                    setText(null);
+                    setGraphic(null);
+                } else {
+                    HBox row = new HBox(5, answerButton, new Label(question.getTitle()));
+                    setGraphic(row);
+                }
+            }
+        });
+        
+    }
+    
+    
+
+
+    private void updateTagListView() {
+        Set<String> uniqueTags = new HashSet<>();
+        for (Question q : questions.getAllQuestions()) {
+            if (q.getTags() != null) {
+                uniqueTags.addAll(q.getTags());
+            }
+        }
+        tagListView.getItems().setAll(uniqueTags);
+    }
+
+    // Alert Pop-Up dialoigue box to answer the question
+    private void showAnswerAlert(Question question) {
+        TextInputDialog dialog = new TextInputDialog();
+        dialog.setTitle("Answer Question");
+        dialog.setHeaderText("Answering: " + question.getTitle());
+        dialog.setContentText("Your answer:");
+
+        dialog.showAndWait().ifPresent(answer -> {
+            if (!answer.trim().isEmpty()) {
+                System.out.println("Answer Submitted: " + answer);
+                Alert success = new Alert(Alert.AlertType.INFORMATION, "Your answer was submitted!");
+                success.show();
+            }
+        });
+    }
+
+    public static void main(String[] args) {
+        launch(args);
+    }
+}

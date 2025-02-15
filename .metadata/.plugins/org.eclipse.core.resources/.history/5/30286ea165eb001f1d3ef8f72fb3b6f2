@@ -1,0 +1,159 @@
+package application;
+
+import javafx.application.Application;
+import javafx.scene.Scene;
+import javafx.scene.control.*;
+import javafx.scene.layout.*;
+import javafx.stage.Stage;
+import java.time.LocalDateTime;
+import java.util.*;
+
+public class DiscussionBoard extends Application {
+    
+    private Questions questions = new Questions();
+    private Answers answers = new Answers();  // Answer storage
+    private ListView<Question> questionListView = new ListView<>();
+    private ListView<String> tagListView = new ListView<>();
+    private ListView<String> answersListView = new ListView<>();  // New: List to show answers
+
+    @Override
+    public void start(Stage primaryStage) {
+        // Sample Data
+        Question q1 = new Question("1", "What is Java?", "Explain Java basics.", "User1", LocalDateTime.now(), List.of("Java", "Programming"));
+        Question q2 = new Question("2", "How does JavaFX work?", "Need help with JavaFX.", "User2", LocalDateTime.now(), List.of("JavaFX", "GUI"));
+        Question q3 = new Question("3", "Do we lose points if we use more than four classes?", "Need clarification.", "User3", LocalDateTime.now(), List.of("Homework", "Grading"));
+
+        questions.addQuestion(q1);
+        questions.addQuestion(q2);
+        questions.addQuestion(q3);
+
+        updateListView();
+        updateTagListView();
+
+        // UI Components
+        TextField titleField = new TextField();
+        titleField.setPromptText("Enter question title");
+
+        TextField tagsField = new TextField();
+        tagsField.setPromptText("Enter tags (comma-separated)");
+
+        Button addButton = new Button("Add Question");
+        addButton.setOnAction(e -> {
+            String title = titleField.getText().trim();
+            String tagsInput = tagsField.getText().trim();
+            
+            if (!title.isEmpty()) {
+                String id = String.valueOf(questions.getAllQuestions().size() + 1);
+                List<String> tags = tagsInput.isEmpty() ? List.of("General") : List.of(tagsInput.split("\\s*,\\s*")); // Split tags
+
+                Question newQuestion = new Question(id, title, "New question", "User", LocalDateTime.now(), tags);
+                questions.addQuestion(newQuestion);
+                updateListView();
+                updateTagListView();
+                titleField.clear();
+                tagsField.clear();
+            }
+        });
+
+        // Layout for the tag panel (LEFT SIDE)
+        VBox tagPanel = new VBox(10, new Label("Filter by Tags"), tagListView);
+        tagPanel.setPrefWidth(200);
+
+        // Layout for the question panel (MIDDLE)
+        VBox questionPanel = new VBox(10, new Label("Questions"), questionListView, titleField, tagsField, addButton);
+        questionPanel.setPrefWidth(500);
+
+        // Layout for the answers panel (RIGHT SIDE)
+        VBox answersPanel = new VBox(10, new Label("Answers"), answersListView);
+        answersPanel.setPrefWidth(300);
+
+        // Main layout (Tags - Questions - Answers)
+        HBox mainLayout = new HBox(20, tagPanel, questionPanel, answersPanel);
+        Scene scene = new Scene(mainLayout, 1000, 500); // Increased window size
+
+        primaryStage.setTitle("Discussion Board");
+        primaryStage.setScene(scene);
+        primaryStage.show();
+    }
+
+
+    private void updateListView() {
+        questionListView.getItems().clear();
+        questionListView.getItems().addAll(questions.getAllQuestions());
+
+        questionListView.setCellFactory(param -> new ListCell<>() {
+            private final Button answerButton = new Button("💬");
+
+            {
+                answerButton.setOnAction(e -> {
+                    Question question = getItem();
+                    if (question != null) {
+                        showAnswerAlert(question);
+                    }
+                });
+                answerButton.setStyle("-fx-font-size: 10px; -fx-padding: 2px 5px;");
+            }
+
+            @Override
+            protected void updateItem(Question question, boolean empty) {
+                super.updateItem(question, empty);
+                if (empty || question == null) {
+                    setText(null);
+                    setGraphic(null);
+                } else {
+                    HBox row = new HBox(5, answerButton, new Label(question.getTitle()));
+                    setGraphic(row);
+                }
+            }
+        });
+
+        // Update answers list when a question is selected
+        questionListView.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal != null) {
+                updateAnswerListView(newVal.getId());
+            }
+        });
+    }
+
+
+    private void updateTagListView() {
+        Set<String> uniqueTags = new HashSet<>();
+        for (Question q : questions.getAllQuestions()) {
+            if (q.getTags() != null) {
+                uniqueTags.addAll(q.getTags());
+            }
+        }
+        tagListView.getItems().setAll(uniqueTags);
+    }
+
+
+    // Updates the answer list view when a question is selected
+    private void updateAnswerListView(String questionId) {
+        answersListView.getItems().clear();
+        for (Answer answer : answers.getAnswersForQuestion(questionId)) {
+            answersListView.getItems().add(answer.getContent());
+        }
+    }
+
+
+    // Alert Pop-Up dialog box to answer the question
+    private void showAnswerAlert(Question question) {
+        TextInputDialog dialog = new TextInputDialog();
+        dialog.setTitle("Answer Question");
+        dialog.setHeaderText("Answering: " + question.getTitle());
+        dialog.setContentText("Your answer:");
+
+        dialog.showAndWait().ifPresent(answer -> {
+            if (!answer.trim().isEmpty()) {
+                answers.addAnswer(new Answer(question.getId(), answer, "User"));
+                updateAnswerListView(question.getId()); // Update the UI with new answer
+                Alert success = new Alert(Alert.AlertType.INFORMATION, "Your answer was submitted!");
+                success.show();
+            }
+        });
+    }
+
+    public static void main(String[] args) {
+        launch(args);
+    }
+}

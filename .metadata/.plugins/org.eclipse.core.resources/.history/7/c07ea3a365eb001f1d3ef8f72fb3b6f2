@@ -1,0 +1,32 @@
+package application;
+
+import java.time.LocalDateTime;
+
+public class Answer {
+	
+	// Answer Properties
+    private String id;
+    private String questionId;
+    private String body;
+    private String author;
+    private LocalDateTime timestamp;
+
+    // Answer Constructor
+    public Answer(String id, String questionId, String body, String author, LocalDateTime timestamp) {
+    	
+        if (body == null || body.trim().isEmpty()) throw new IllegalArgumentException("Answer body cannot be empty");
+       
+        this.id = id;
+        this.questionId = questionId;
+        this.body = body;
+        this.author = author;
+        this.timestamp = timestamp;
+    }
+
+    // Getters and Setters
+    public String getId() { return id; }
+    public String getQuestionId() { return questionId; }
+    public String getBody() { return body; }
+    public String getAuthor() { return author; }
+    public LocalDateTime getTimestamp() { return timestamp; }
+}
